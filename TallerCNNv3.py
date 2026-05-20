@@ -307,118 +307,77 @@ plt.show()
 
 # ==============================
 
-print("\n=== SISTEMA DE CLASIFICACIÓN DE IMÁGENES ===")
-
-print("1. Usar una imagen aleatoria del dataset de prueba")
-
-print("2. Cargar una imagen externa desde mi computadora (.jpg, .png)")
-
-
-opcion = input("Seleccione una opción : ")
-
-
-img_para_predecir = None
-
-titulo_grafica = ""
-
-clase_real_texto = "N/A (Imagen Externa)"
-
-
-if opcion == "1":
-
-    # Seleccionar un índice aleatorio de las 10,000 imágenes de prueba
-
-    indice_aleatorio = np.random.randint(0, x_test.shape[0])
-
-    img_para_predecir = x_test[indice_aleatorio]
-
-    clase_real_texto = class_names[int(y_test[indice_aleatorio])]
-
-    titulo_grafica = f"Muestra Dataset - Real: {clase_real_texto}"
-
-    
-
-elif opcion == "2":
-
-    ruta_img = input("Ingrese la ruta completa de la imagen (ej: C:/imagenes/perro.jpg): ")
-
-    if os.path.exists(ruta_img):
-
-        try:
-
-            # Cargar y forzar el redimensionamiento requerido de 32x32
-
-            img_original = image.load_img(ruta_img, target_size=(32, 32))
-
-            # Convertir a matriz y normalizar exactamente igual que el dataset
-
-            img_para_predecir = image.img_to_array(img_original) / 255.0
-
-            titulo_grafica = f"Externa: {os.path.basename(ruta_img)}"
-
-        except Exception as e:
-
-            print(f"Error al procesar el archivo: {e}")
-
-    else:
-
-        print("La ruta ingresada no existe. Se canceló el proceso.")
-
-
-# Si se logró obtener la imagen , realiza la prediccion
-
-if img_para_predecir is not None:
-
-    # Preparar las dimensiones para la CNN añadiendo el eje del lote: (1, 32, 32, 3)
-
-    datos_entrada = np.expand_dims(img_para_predecir, axis=0)
-
-    
-
-    # Predicción
-
-    prediccion_cruda = model.predict(datos_entrada, verbose=0)
-
-    indice_predicho = np.argmax(prediccion_cruda)
-
-    clase_predicha_texto = class_names[indice_predicho]
-
-    porcentaje_confianza = prediccion_cruda[0][indice_predicho] * 100
-
-    
-
-    # Imprimir resumen de datos relevantes en la consola
-
+while True:
     print("\n==============================================")
-
-    print("         DATOS RELEVANTES DE LA PREDICCIÓN    ")
-
+    print("       SISTEMA DE CLASIFICACIÓN DE IMÁGENES   ")
     print("==============================================")
-
-    print(f"Clase Real esperada:   {clase_real_texto}")
-
-    print(f"Clase Predicha por CNN: {clase_predicha_texto}")
-
-    print(f"Porcentaje de Certeza: {porcentaje_confianza:.2f}%")
-
-    print(f"Dimensiones de entrada a la Red: {datos_entrada.shape}")
-
+    print("1. Usar una imagen aleatoria del dataset de prueba")
+    print("2. Cargar una imagen externa desde mi computadora (.jpg, .png)")
+    print("3. Salir del programa")
     print("==============================================")
-
     
+    opcion = input("Seleccione una opción (1-3): ").strip()
+    
+    if opcion == "3":
+        print("\nSaliendo del sistema de predicción. ¡Hasta luego!")
+        break
+        
+    if opcion not in ["1", "2"]:
+        print("Opción no válida. Intente nuevamente.")
+        continue
 
-    # Mostrar la imagen analizada con su resultado en la sección de gráficos
+    img_para_predecir = None
+    titulo_grafica = ""
+    clase_real_texto = "N/A (Imagen Externa)"
 
-    plt.figure(figsize=(5, 5))
+    if opcion == "1":
+        # Seleccionar un índice aleatorio de las 10,000 imágenes de prueba
+        indice_aleatorio = np.random.randint(0, x_test.shape[0])
+        img_para_predecir = x_test[indice_aleatorio]
+        clase_real_texto = class_names[int(y_test[indice_aleatorio])]
+        titulo_grafica = f"Muestra Dataset - Real: {clase_real_texto}"
+        
+    elif opcion == "2":
+        ruta_img = input("Ingrese la ruta completa de la imagen (ej: C:/imagenes/perro.jpg): ").strip()
+        if os.path.exists(ruta_img):
+            try:
+                # Cargar y forzar el redimensionamiento requerido de 32x32
+                img_original = image.load_img(ruta_img, target_size=(32, 32))
+                # Convertir a matriz y normalizar exactamente igual que el dataset
+                img_para_predecir = image.img_to_array(img_original) / 255.0
+                titulo_grafica = f"Externa: {os.path.basename(ruta_img)}"
+            except Exception as e:
+                print(f"Error al procesar el archivo: {e}")
+        else:
+            print("La ruta ingresada no existe. Regresando al menú principal.")
+            continue
 
-    plt.imshow(img_para_predecir)
-
-    plt.title(f"{titulo_grafica}\nPredicción CNN: {clase_predicha_texto} ({porcentaje_confianza:.1f}%)")
-
-    plt.axis('off')
-
-    plt.show()
-
-else:
-
-    print("No se pudo ejecutar la predicción debido a un fallo en la selección de la imagen.")
+    # Si se logró obtener la imagen, realiza la predicción
+    if img_para_predecir is not None:
+        # Preparar las dimensiones para la CNN añadiendo el eje del lote: (1, 32, 32, 3)
+        datos_entrada = np.expand_dims(img_para_predecir, axis=0)
+        
+        # Predicción
+        prediccion_cruda = model.predict(datos_entrada, verbose=0)
+        indice_predicho = np.argmax(prediccion_cruda)
+        clase_predicha_texto = class_names[indice_predicho]
+        porcentaje_confianza = prediccion_cruda[0][indice_predicho] * 100
+        
+        # Imprimir resumen de datos relevantes en la consola
+        print("\n==============================================")
+        print("         DATOS RELEVANTES DE LA PREDICCIÓN    ")
+        print("==============================================")
+        print(f"Clase Real esperada:   {clase_real_texto}")
+        print(f"Clase Predicha por CNN: {clase_predicha_texto}")
+        print(f"Porcentaje de Certeza: {porcentaje_confianza:.2f}%")
+        print(f"Dimensiones de entrada a la Red: {datos_entrada.shape}")
+        print("==============================================")
+        
+        # Mostrar la imagen analizada con su resultado en la sección de gráficos
+        plt.figure(figsize=(5, 5))
+        plt.imshow(img_para_predecir)
+        plt.title(f"{titulo_grafica}\nPredicción CNN: {clase_predicha_texto} ({porcentaje_confianza:.1f}%)")
+        plt.axis('off')
+        plt.show()
+    else:
+        print("No se pudo ejecutar la predicción debido a un fallo en la selección de la imagen.")
